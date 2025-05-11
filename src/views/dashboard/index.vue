@@ -1,58 +1,22 @@
-<template>
-  <div class="dashboard-container">
+<script setup lang="ts">
+const url = 'https://paiad.online'  // 👈 你要展示的网址
+</script>
 
+<template>
+  <div class="iframe-container">
+    <iframe :src="url" frameborder="0"></iframe>
   </div>
 </template>
 
-<script setup lang="ts">
-// 组件逻辑
-</script>
-
 <style scoped>
-.dashboard-container {
-  padding: 20px;
+.iframe-container {
+  width: 100%;
+  height: 100vh; /* 占满整个视口 */
+  overflow: hidden;
 }
-
-.data-card {
-  height: 180px;
+iframe {
+  width: 100%;
+  height: 100%;
+  border: none;
 }
-
-.card-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  color: #606266;
-}
-
-.card-value {
-  font-size: 28px;
-  font-weight: bold;
-  color: #303133;
-  margin: 20px 0;
-}
-
-.card-footer {
-  display: flex;
-  align-items: center;
-  color: #909399;
-  font-size: 14px;
-}
-
-.trend {
-  display: flex;
-  align-items: center;
-  margin-right: 8px;
-}
-
-.trend.up {
-  color: #67c23a;
-}
-
-.trend.down {
-  color: #f56c6c;
-}
-
-.period {
-  color: #909399;
-}
-</style> 
+</style>

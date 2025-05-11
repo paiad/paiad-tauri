@@ -4,18 +4,19 @@
     <div class="sidebar-container" :class="{ 'is-collapse': isCollapse }">
       <div class="logo-container">
         <img src="../assets/logo.png" alt="Logo" class="logo" v-if="!isCollapse">
-        <img src="../assets/logo.png" alt="Logo" class="logo-small" v-else>
+        <img src="../assets/logo_16.svg" alt="Logo" class="logo-small" v-else>
       </div>
       <el-menu
         :default-active="activeMenu"
         class="sidebar-menu"
         :collapse="isCollapse"
-        background-color="#304156"
-        text-color="#bfcbd9"
+        background-color="#FFFFFF"
+        text-color="#000000"
         active-text-color="#409EFF"
+        router
       >
         <el-menu-item index="/dashboard">
-          <el-icon><Odometer /></el-icon>
+          <el-icon><Headset /></el-icon>
           <template #title>仪表盘</template>
         </el-menu-item>
         <el-menu-item index="/yu-ke-tang">
@@ -38,7 +39,7 @@
         <div class="right">
           <el-dropdown>
             <span class="user-info">
-              <el-avatar :size="32" src="https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png" />
+              <el-avatar :size="30" src="https://paiad.online/sunflower.png" />
               <span class="username">管理员</span>
             </span>
             <template #dropdown>
@@ -82,7 +83,7 @@ const toggleSidebar = () => {
 .sidebar-container {
   width: 210px;
   height: 100%;
-  background-color: #304156;
+  background-color: #e9f5eb;
   transition: width 0.3s;
   overflow: hidden;
 }
@@ -97,7 +98,7 @@ const toggleSidebar = () => {
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: #2b3649;
+  background-color: #e9f5eb;
 }
 
 .logo {
@@ -151,5 +152,10 @@ const toggleSidebar = () => {
   padding: 20px;
   overflow-y: auto;
   background-color: #f0f2f5;
+}
+
+.el-avatar--circle {
+  border-radius: 50%;
+  background-color: #e9f5eb;
 }
 </style> 
