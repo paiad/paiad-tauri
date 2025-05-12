@@ -11,7 +11,7 @@
         class="sidebar-menu"
         :collapse="isCollapse"
         background-color="#304156"
-        text-color="#000000"
+        text-color="#747474"
         active-text-color="#409EFF"
       >
         <el-menu-item index="/dashboard">
