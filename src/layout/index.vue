@@ -15,12 +15,12 @@
         active-text-color="#409EFF"
       >
         <el-menu-item index="/dashboard">
-          <el-icon><Odometer /></el-icon>
-          <template #title>仪表盘</template>
+          <el-icon><Icon icon="hugeicons:cloud"/></el-icon>
+          <template #title>雨课堂</template>
         </el-menu-item>
         <el-menu-item index="/yu-ke-tang">
           <el-icon><Plus /></el-icon>
-          <template #title>雨课堂</template>
+          <template #title>更多</template>
         </el-menu-item>
       </el-menu>
     </div>
@@ -60,11 +60,12 @@
 </template>
 
 <script setup lang="ts">
+import { Icon } from '@iconify/vue';
 import { ref, computed } from 'vue'
 import { useRoute } from 'vue-router'
 
 const route = useRoute()
-const isCollapse = ref(false)
+const isCollapse = ref(true)
 const activeMenu = computed(() => route.path)
 
 const toggleSidebar = () => {

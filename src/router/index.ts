@@ -26,13 +26,13 @@ const router = createRouter({
           // 懒加载 dashboard 页面组件
           component: () => import('../views/dashboard/index.vue'),
           // 路由元信息（可以用于显示标题、图标等）
-          meta: { title: '仪表盘', icon: 'Odometer' }
+          meta: { title: '雨课堂', icon: 'Odometer' }
         },
         {
           path: 'yu-ke-tang',
           name: 'Yu-Ke-Tang',
           component: () => import('../views/tools/yu-ke-tang.vue'),
-          meta: { title: '雨课堂', icon: 'Plus' }
+          meta: { title: '更多', icon: 'Plus' }
         }
       ]
     }
