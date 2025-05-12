@@ -1,5 +1,5 @@
 <script setup lang="ts">
-const url = 'https://paiad.online'  // 👈 你要展示的网址
+const url = 'https://www.yuketang.cn/v2/web/index'  // 👈 你要展示的网址
 </script>
 
 <template>
