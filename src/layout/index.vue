@@ -23,6 +23,10 @@
           <el-icon><Icon icon="hugeicons:cloud"/></el-icon>
           <template #title>雨课堂</template>
         </el-menu-item>
+        <el-menu-item index="/more">
+          <el-icon><Plus /></el-icon>
+          <template #title>更多</template>
+        </el-menu-item>
       </el-menu>
     </div>
 
@@ -64,6 +68,7 @@
 import { Icon } from '@iconify/vue';
 import { ref, computed } from 'vue'
 import { useRoute } from 'vue-router'
+import {Plus} from "@element-plus/icons-vue";
 
 const route = useRoute()
 const isCollapse = ref(true)
@@ -153,5 +158,10 @@ const toggleSidebar = () => {
   padding: 20px;
   overflow-y: auto;
   background-color: #f0f2f5;
+}
+
+/* 移除黑色框线 */
+.user-info:focus {
+  outline: none;
 }
 </style>
