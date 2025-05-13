@@ -39,6 +39,12 @@ const router = createRouter({
           name: '更多',
           component: () => import('../views/more/index.vue'),
           meta: { title: '更多', icon: 'Plus' }
+        },
+        {
+          path: 'stress-test',
+          name: '压测',
+          component: () => import('../views/stress-test/index.vue'),
+          meta: { title: '压测', icon: '' }
         }
       ]
     }

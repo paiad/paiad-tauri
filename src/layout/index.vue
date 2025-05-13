@@ -23,6 +23,10 @@
           <el-icon><Icon icon="hugeicons:cloud"/></el-icon>
           <template #title>雨课堂</template>
         </el-menu-item>
+        <el-menu-item index="/stress-test">
+          <el-icon><Icon icon="material-symbols:sentiment-stressed-outline-rounded"/></el-icon>
+          <template #title>压测工具</template>
+        </el-menu-item>
         <el-menu-item index="/more">
           <el-icon><Plus /></el-icon>
           <template #title>更多</template>
