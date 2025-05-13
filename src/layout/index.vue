@@ -13,14 +13,15 @@
         background-color="#304156"
         text-color="#747474"
         active-text-color="#409EFF"
+        router
       >
-        <el-menu-item index="/dashboard">
-          <el-icon><Icon icon="hugeicons:cloud"/></el-icon>
-          <template #title>雨课堂</template>
+        <el-menu-item index="/paiad-blog">
+          <el-icon><Icon icon="tdesign:broccoli" /></el-icon>
+          <template #title>博客</template>
         </el-menu-item>
         <el-menu-item index="/yu-ke-tang">
-          <el-icon><Plus /></el-icon>
-          <template #title>更多</template>
+          <el-icon><Icon icon="hugeicons:cloud"/></el-icon>
+          <template #title>雨课堂</template>
         </el-menu-item>
       </el-menu>
     </div>
@@ -38,7 +39,7 @@
         <div class="right">
           <el-dropdown>
             <span class="user-info">
-              <el-avatar :size="32" src="https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png" />
+              <el-avatar :size="27" src="https://paiad.online/sunflower.png" style="background-color: #e9f5eb"/>
               <span class="username">管理员</span>
             </span>
             <template #dropdown>

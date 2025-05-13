@@ -14,25 +14,25 @@ const router = createRouter({
       path: '/',
       // 使用的组件为主布局 Layout
       component: Layout,
-      // 自动重定向到 /dashboard 页面
-      redirect: '/dashboard',
+      // 自动重定向到 /yuketang 页面
+      redirect: '/paiad-blog',
       // 子路由配置
       children: [
         {
-          // 子路由路径（完整路径为 /dashboard）
-          path: 'dashboard',
+          // 子路由路径（完整路径为 /yuketang）
+          path: 'yu-ke-tang',
           // 路由名称
           name: 'Dashboard',
-          // 懒加载 dashboard 页面组件
-          component: () => import('../views/dashboard/index.vue'),
+          // 懒加载 yuketang 页面组件
+          component: () => import('../views/yuketang/index.vue'),
           // 路由元信息（可以用于显示标题、图标等）
           meta: { title: '雨课堂', icon: 'Odometer' }
         },
         {
-          path: 'yu-ke-tang',
-          name: 'Yu-Ke-Tang',
-          component: () => import('../views/tools/yu-ke-tang.vue'),
-          meta: { title: '更多', icon: 'Plus' }
+          path: 'paiad-blog',
+          name: 'Paiad Blog',
+          component: () => import('../views/paiad-blog/index.vue'),
+          meta: { title: '博客', icon: '' }
         }
       ]
     }
