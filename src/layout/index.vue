@@ -27,6 +27,10 @@
           <el-icon><Icon icon="material-symbols:sentiment-stressed-outline-rounded"/></el-icon>
           <template #title>压测工具</template>
         </el-menu-item>
+        <el-menu-item index="/file-exchange">
+          <el-icon><Icon icon="codex:file"/></el-icon>
+          <template #title>文件互传</template>
+        </el-menu-item>
         <el-menu-item index="/more">
           <el-icon><Plus /></el-icon>
           <template #title>更多</template>

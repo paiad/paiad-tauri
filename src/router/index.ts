@@ -45,6 +45,12 @@ const router = createRouter({
           name: '压测',
           component: () => import('../views/stress-test/index.vue'),
           meta: { title: '压测', icon: '' }
+        },
+        {
+          path: 'file-exchange',
+          name: '文件互传',
+          component: () => import('../views/file-exchange/index.vue'),
+          meta: { title: '文件互传', icon: '' }
         }
       ]
     }
