@@ -51,6 +51,12 @@ const router = createRouter({
           name: '文件互传',
           component: () => import('../views/file-exchange/index.vue'),
           meta: { title: '文件互传', icon: '' }
+        },
+        {
+          path: 'network',
+          name: '网络攻防',
+          component: () => import('../views/network/index.vue'),
+          meta: { title: '网络攻防', icon: '' }
         }
       ]
     }
