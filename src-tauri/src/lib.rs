@@ -102,14 +102,14 @@ impl NetworkMonitor {
         Ok((lost as f64 / total as f64) * 100.0)
     }
 
-    fn detect_anomaly(&mut self, metrics: NetworkMetrics) -> AnomalyDetectionResult {
+    fn detect_anomaly(&mut self, mut metrics: NetworkMetrics) -> AnomalyDetectionResult { // <-- 1. 将 metrics 参数标记为 mut 可变
         let mut anomaly_score = 0.0;
-        
+
         if self.metrics_history.len() > 0 {
             let avg_latency: f64 = self.metrics_history.iter()
                 .map(|m| m.latency)
                 .sum::<f64>() / self.metrics_history.len() as f64;
-            
+
             let std_latency: f64 = (self.metrics_history.iter()
                 .map(|m| (m.latency - avg_latency).powi(2))
                 .sum::<f64>() / self.metrics_history.len() as f64)
@@ -120,13 +120,21 @@ impl NetworkMonitor {
 
         let is_anomaly = anomaly_score > self.anomaly_threshold;
 
+        // **2. 核心修改：将计算出的 is_anomaly 赋值给 metrics 结构体中的字段**
+        metrics.is_anomaly = is_anomaly;
+
+        // 3. 更新历史记录：将更新后的 metrics 结构体添加到历史中
+        //    这里我们使用更新后的 metrics 的克隆来添加到历史
+        let metrics_to_history = metrics.clone();
+
         if self.metrics_history.len() >= self.window_size {
             self.metrics_history.pop_front();
         }
-        self.metrics_history.push_back(metrics.clone());
+        self.metrics_history.push_back(metrics_to_history);
+
 
         AnomalyDetectionResult {
-            metrics,
+            metrics, // <-- 返回包含正确 is_anomaly 值的 metrics 结构体
             anomaly_score,
             threshold: self.anomaly_threshold,
         }

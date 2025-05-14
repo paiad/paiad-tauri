@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onUnmounted, watch } from 'vue'
+import { ref, onUnmounted, watch, computed } from 'vue' // 新增 computed
 import { invoke } from '@tauri-apps/api/core'
 import { Line } from 'vue-chartjs'
 import {
@@ -45,6 +45,11 @@ let monitoringInterval: number | null = null
 
 // **新增：验证状态和错误消息**
 const urlError = ref(''); // 用于显示URL输入错误信息
+
+// **新增：分页状态**
+const currentPage = ref(1); // 当前页码
+const pageSize = ref(10); // 每页显示的条数，这里固定为10
+
 
 const chartData = ref({
   labels: [] as string[],
@@ -142,20 +147,28 @@ const updateMetrics = async () => {
     // 假设 update_metrics 命令接收 metrics 并进行处理，返回包含异常信息的结构
     const result = await invoke<AnomalyDetectionResult>('update_metrics', { metrics: networkMetrics })
 
-    // 更新数据 (保留最近100条)
-    const newMetrics = [...metrics.value, result]
-    if (newMetrics.length > 100) {
-      newMetrics.shift() // 移除最旧的数据
+    // 更新数据 (保留最近100条，根据 config.window_size)
+    // **修改：这里的长度限制应该使用 config.value.window_size**
+    const limitSize = config.value.window_size;
+    const newMetrics = [...metrics.value, result];
+    if (newMetrics.length > limitSize) {
+      newMetrics.shift(); // 移除最旧的数据
     }
-    metrics.value = newMetrics
+    metrics.value = newMetrics;
 
-    // 更新图表数据 (保留最近100个点)
-    const currentTime = new Date(networkMetrics.timestamp).toLocaleTimeString(); // 使用后端返回的时间戳
-    const newLabels = [...chartData.value.labels, currentTime]
+    // **新增：有新数据时重置回第一页，以便用户看到最新数据**
+    // 但是如果用户正在看后面的页码，突然跳回去可能不好，可以根据需求调整
+    // 这里简单实现有新数据就跳回第一页
+    currentPage.value = 1;
+
+
+    // 更新图表数据 (保留最近100个点，与metrics同步长度)
+    // **修改：这里的长度限制也应与metrics同步**
+    const newLabels = [...chartData.value.labels, new Date(networkMetrics.timestamp).toLocaleTimeString()]; // 使用后端返回的时间戳
     const newLatencyData = [...chartData.value.datasets[0].data, networkMetrics.latency]
     const newPacketLossData = [...chartData.value.datasets[1].data, networkMetrics.packet_loss]
 
-    if (newLabels.length > 100) {
+    if (newLabels.length > limitSize) {
       newLabels.shift()
       newLatencyData.shift()
       newPacketLossData.shift()
@@ -226,7 +239,7 @@ const stopMonitoring = () => {
   }
 }
 
-// **新增：重置图表和数据**
+// **新增：重置图表、数据和分页**
 const resetChartAndMetrics = () => {
   console.log('重置图表和数据');
   stopMonitoring(); // 重置时先停止监控
@@ -235,6 +248,7 @@ const resetChartAndMetrics = () => {
     labels: [],
     datasets: chartData.value.datasets.map(ds => ({ ...ds, data: [] }))
   };
+  currentPage.value = 1; // **新增：重置分页到第一页**
   // 可选：重置URL输入框
   // targetUrl.value = '';
   // urlError.value = '';
@@ -290,21 +304,21 @@ const downloadChartImage = () => {
   }
 }
 
-// **新增：下载检测结果为Excel**
+// **新增：下载检测结果为Excel (导出metrics中的全部数据)**
 const downloadMetricsAsExcel = () => {
-  console.log('下载检测结果为Excel');
+  console.log('下载全部检测结果为Excel');
   if (metrics.value.length === 0) {
     console.warn('没有数据可供下载');
     alert('没有数据可供下载！'); // 提示用户没有数据
     return;
   }
 
-  // 准备要导出到 Excel 的数据
+  // **修改：准备要导出到 Excel 的数据 - 导出metrics中的全部数据**
   const dataForExcel = metrics.value.map(item => ({
     '时间': new Date(item.metrics.timestamp).toLocaleString(),
     '延迟 (ms)': item.metrics.latency,
     '丢包率 (%)': item.metrics.packet_loss,
-    '带宽': item.metrics.bandwidth, // 包含带宽数据
+    // '带宽': item.metrics.bandwidth, // 包含带宽数据
     '异常分数': item.anomaly_score,
     '是否异常': item.metrics.is_anomaly ? '异常' : '正常' // 将布尔值转为文字
   }));
@@ -350,15 +364,54 @@ watch(targetUrl, (newValue, oldValue) => {
   }
 });
 
-// 监听 metrics 长度，当数据清空时（如重置）重置图表数据（如果之前没清空）
+// 监听 metrics 长度，当数据变化时（包括新增和清空）处理分页和排序
 watch(metrics, (newValue) => {
+  // 当 metrics 数据变化时，保持在当前页，除非当前页变空了
+  // 或者在清空数据时重置分页 (已在 resetChartAndMetrics 中处理)
+
+  // 图表数据也与 metrics 同步长度
   if (newValue.length === 0 && chartData.value.labels.length > 0) {
     chartData.value = { // 清空图表数据
       labels: [],
       datasets: chartData.value.datasets.map(ds => ({ ...ds, data: [] }))
     };
   }
-}, { deep: true }); // 需要深度监听如果metrics内部对象变化，但这里主要监听长度变化
+
+  // 当 metrics 变化时，如果当前页码超出了总页数，则回退到最后一页或第一页
+  const totalPages = Math.ceil(newValue.length / pageSize.value);
+  if (currentPage.value > totalPages && totalPages > 0) {
+    currentPage.value = totalPages; // 回到最后一页
+  } else if (totalPages === 0) {
+    currentPage.value = 1; // 没有数据时回到第一页
+  }
+
+}, { deep: true });
+
+// **新增：计算属性，用于获取当前页应该显示的数据（已排序和分页）**
+const paginatedAndReversedMetrics = computed(() => {
+  // 1. 复制原始数据，避免修改 ref
+  const data = [...metrics.value];
+
+  // 2. 按时间戳降序排序 (最新的在前面)
+  // 注意：这里的 timestamp 是 u64 类型，直接相减可能溢出或不精确，
+  // 但用于比较大小通常没问题，或者转换为 Number 或 BigInt 再比较
+  data.sort((a, b) => b.metrics.timestamp - a.metrics.timestamp); // b - a 实现降序
+
+  // 3. 计算当前页数据的起始和结束索引
+  const startIndex = (currentPage.value - 1) * pageSize.value;
+  const endIndex = startIndex + pageSize.value;
+
+  // 4. 截取当前页的数据
+  return data.slice(startIndex, endIndex);
+});
+
+
+// **新增：处理页码变化的函数**
+const handlePageChange = (newPage: number) => {
+  console.log(`切换到页面: ${newPage}`);
+  currentPage.value = newPage;
+  // computed 属性会自动更新表格数据
+};
 
 </script>
 
@@ -379,10 +432,10 @@ watch(metrics, (newValue) => {
 
         <el-form-item label="窗口大小">
           <el-input-number v-model="config.window_size" :min="10" :max="1000" :disabled="isMonitoring" /> </el-form-item>
-        <el-form-item label="异常阈值">
-          <el-input-number v-model="config.anomaly_threshold" :min="0.1" :max="10" :step="0.1" :disabled="isMonitoring" /> </el-form-item>
         <el-form-item label="采样间隔(ms)">
           <el-input-number v-model="config.sampling_interval" :min="100" :max="5000" :step="100" :disabled="isMonitoring" /> </el-form-item>
+        <el-form-item label="异常阈值">
+          <el-input-number v-model="config.anomaly_threshold" :min="0.1" :max="10" :step="0.1" :disabled="isMonitoring" /> </el-form-item>
 
         <el-form-item>
           <el-button type="primary" @click="startMonitoring" :disabled="isMonitoring || !targetUrl">
@@ -412,29 +465,39 @@ watch(metrics, (newValue) => {
 
 
     <div class="metrics-table">
-      <h3>最近检测结果 ({{ metrics.length }}条)</h3>
-      <el-table :data="metrics.slice(-10)" style="width: 100%">
-        <el-table-column prop="metrics.timestamp" label="时间" width="180">
-          <template #default="scope">
-            {{ new Date(scope.row.metrics.timestamp).toLocaleString() }}
-          </template>
-        </el-table-column>
-        <el-table-column prop="metrics.latency" label="延迟(ms)" width="120" />
-        <el-table-column prop="metrics.packet_loss" label="丢包率(%)" width="120" />
-        <el-table-column prop="metrics.bandwidth" label="带宽" width="120" />
-        <el-table-column prop="anomaly_score" label="异常分数" width="120" />
-        <el-table-column prop="metrics.is_anomaly" label="是否异常" width="120">
-          <template #default="scope">
-            <el-tag :type="scope.row.metrics.is_anomaly ? 'danger' : 'success'">
-              {{ scope.row.metrics.is_anomaly ? '异常' : '正常' }}
-            </el-tag>
-          </template>
-        </el-table-column>
-      </el-table>
+      <h3>最近检测结果 (总计 {{ metrics.length }} 条)</h3> <el-table :data="paginatedAndReversedMetrics" style="width: 100%">
+      <el-table-column prop="metrics.timestamp" label="时间" width="180">
+        <template #default="scope">
+          {{ new Date(scope.row.metrics.timestamp).toLocaleString() }}
+        </template>
+      </el-table-column>
+      <el-table-column prop="metrics.latency" label="延迟(ms)" width="120" />
+      <el-table-column prop="metrics.packet_loss" label="丢包率(%)" width="120" />
+<!--      <el-table-column prop="metrics.bandwidth" label="带宽" width="120" />-->
+      <el-table-column prop="anomaly_score" label="异常分数" width="120" />
+      <el-table-column prop="metrics.is_anomaly" label="是否异常" width="120">
+        <template #default="scope">
+          <el-tag :type="scope.row.metrics.is_anomaly ? 'danger' : 'success'">
+            {{ scope.row.metrics.is_anomaly ? '异常' : '正常' }}
+          </el-tag>
+        </template>
+      </el-table-column>
+    </el-table>
+
+      <el-pagination
+          v-if="metrics.length > 0"
+          :current-page="currentPage"
+          :page-size="pageSize"
+          :total="metrics.length"
+          @current-change="handlePageChange"
+          layout="total, prev, pager, next, jumper"
+          style="margin-top: 20px; text-align: right;"
+      />
+
     </div>
 
     <div class="table-actions" v-if="metrics.length > 0">
-      <el-button @click="downloadMetricsAsExcel" type="success" :disabled="metrics.length === 0">下载结果为Excel (.xlsx)</el-button>
+      <el-button @click="downloadMetricsAsExcel" type="success" :disabled="metrics.length === 0">下载全部结果为Excel (.xlsx)</el-button>
     </div>
 
   </div>
@@ -496,6 +559,12 @@ watch(metrics, (newValue) => {
 .metrics-table {
   margin-top: 20px;
 }
+
+/* 新增：分页组件容器样式 */
+.el-pagination {
+  justify-content: flex-end; /* 让分页组件内容靠右对齐 */
+}
+
 
 h2 {
   margin-bottom: 20px;
